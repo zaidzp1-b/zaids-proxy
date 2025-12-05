@@ -5,6 +5,12 @@ var games = [
     image: 'assets/images/add.png'
   },
   {
+    id: 'zaidgpt',
+    title: 'ZaidGPT',
+    url: 'https://zaidgpt.vercel.app',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/ChatGPT-Logo.svg'
+  },
+  {
     id: 'funfri',
     title: 'FunFri Games',
     url: 'https://funfrinew.neocities.org/',
