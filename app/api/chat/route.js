@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
+export const runtime = "nodejs";
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -8,19 +10,22 @@ const groq = new Groq({
 export async function POST(req) {
   try {
     const { messages } = await req.json();
+
     const response = await groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
-          content:
-            "Your name is ZaidGPT. Be friendly, simple, and helpful."
+          content: "Your name is ZaidGPT. Be friendly, simple, and helpful."
         },
         ...messages,
       ],
     });
+
     const reply = response.choices?.[0]?.message?.content || "";
+
     return NextResponse.json({ reply });
+
   } catch (error) {
     console.error("Error in /api/chat:", error);
     return NextResponse.json({ reply: "Server error." }, { status: 500 });
