@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ZaidGPT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Your site CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Fonts (matches your headings/buttons) -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body theme="main">
+
+  <h1>Zaid<span>GPT</span></h1>
+  <p id="splash">Chat with ZaidGPT</p>
+
+  <!-- Chat Container -->
+  <div class="center-container" style="width: 80%; max-width: 900px;">
+    <div id="messages"
+      style="
+        height: 55vh;
+        overflow-y: auto;
+        padding: 20px;
+        border-radius: 10px;
+        background: rgba(0,0,0,0.4);
+        margin-bottom: 15px;
+      ">
+      <p style="opacity: 0.7;">Start a conversation…</p>
+    </div>
+
+    <!-- Input -->
+    <input
+      id="input"
+      type="text"
+      placeholder="Type your message…"
+      style="width: 80%;"
+      onkeydown="handleKey(event)"
+    >
+    <br>
+    <button onclick="sendMessage()" class="play">Send</button>
+    <button onclick="launchab()" class="secondary">Panic</button>
+  </div>
+
+  <!-- Navigation -->
+  <div class="links">
+    <div class="left">
+      <a href="/">Home</a>
+      <a href="/games.html">Games</a>
+      <a href="/apps.html">Apps</a>
+    </div>
+    <div class="right">
+      <a href="#" onclick="launchab()">Panic</a>
+    </div>
+  </div>
+
+<script>
+  /* ===============================
+     THEME + PANIC (SITE STANDARD)
+     =============================== */
+
+  if (localStorage.getItem('theme')) {
+    document.body.setAttribute('theme', localStorage.getItem('theme'))
+  }
+
+  if (localStorage.getItem('launchblank') && window.self !== window.top) {
+    launchab()
+  }
+
+  function launchab() {
+    const tab = window.open('about:blank', '_blank')
+    if (!tab) return
+    const iframe = tab.document.createElement('iframe')
+    const stl = iframe.style
+    stl.border = stl.outline = 'none'
+    stl.width = '100vw'
+    stl.height = '100vh'
+    stl.position = 'fixed'
+    stl.left = stl.right = stl.top = stl.bottom = '0'
+    iframe.src = self.location
+    tab.document.body.appendChild(iframe)
+    window.parent.window.location.replace(
+      localStorage.getItem('panicurl') || 'https://classroom.google.com/h'
+    )
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (
+      localStorage.getItem('panickey') &&
+      localStorage.getItem('panickey') === e.key
+    ) {
+      window.parent.window.location.replace(
+        localStorage.getItem('panicurl') || 'https://classroom.google.com/h'
+      )
+    }
+  })
+
+  /* ===============================
+     CHAT LOGIC
+     =============================== */
+
+  let messages = []
+  const messagesDiv = document.getElementById('messages')
+  const input = document.getElementById('input')
+
+  function handleKey(e) {
+    if (e.key === 'Enter') sendMessage()
+  }
+
+  function renderMessages() {
+    messagesDiv.innerHTML = ''
+    messages.forEach(m => {
+      const p = document.createElement('p')
+      p.style.textAlign = m.role === 'user' ? 'right' : 'left'
+      p.style.margin = '10px 0'
+      p.innerHTML = `<strong>${m.role === 'user' ? 'You' : 'ZaidGPT'}:</strong> ${m.content}`
+      messagesDiv.appendChild(p)
+    })
+    messagesDiv.scrollTop = messagesDiv.scrollHeight
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim()
+    if (!text) return
+
+    messages.push({ role: 'user', content: text })
+    input.value = ''
+    renderMessages()
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      })
+      const data = await res.json()
+      messages.push({
+        role: 'assistant',
+        content: data.reply || 'No response.'
+      })
+      renderMessages()
+    } catch (err) {
+      messages.push({
+        role: 'assistant',
+        content: 'Error contacting server.'
+      })
+      renderMessages()
+    }
+  }
+</script>
+</body>
+</html>
